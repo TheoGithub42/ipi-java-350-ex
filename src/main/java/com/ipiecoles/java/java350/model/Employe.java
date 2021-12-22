@@ -48,11 +48,13 @@ public class Employe {
      * @return
      */
     public Integer getNombreAnneeAnciennete() {
-        //Date d'embauche antérieure à la date du jour
-        if(dateEmbauche != null && dateEmbauche.isBefore(LocalDate.now())){
-            return LocalDate.now().getYear() - dateEmbauche.getYear();
+        if (dateEmbauche == null){
+            return null;
         }
-        return 0;
+        if (dateEmbauche.isAfter(LocalDate.now())){
+            return 0;
+        }
+        return LocalDate.now().getYear() - dateEmbauche.getYear();
     }
 
     public Integer getNbConges() {
@@ -66,12 +68,12 @@ public class Employe {
     public Integer getNbRtt(LocalDate d){
         int i1 = d.isLeapYear() ? 365 : 366;int var = 104;
         switch (LocalDate.of(d.getYear(),1,1).getDayOfWeek()){
-        case THURSDAY: if(d.isLeapYear()) var =  var + 1; break;
-        case FRIDAY:
-        if(d.isLeapYear()) var =  var + 2;
-        else var =  var + 1;
-case SATURDAY:var = var + 1;
-                    break;
+            case THURSDAY: if(d.isLeapYear()) var =  var + 1; break;
+            case FRIDAY:
+                if(d.isLeapYear()) var =  var + 2;
+                else var =  var + 1;
+            case SATURDAY:var = var + 1;
+                break;
         }
         int monInt = (int) Entreprise.joursFeries(d).stream().filter(localDate ->
                 localDate.getDayOfWeek().getValue() <= DayOfWeek.FRIDAY.getValue()).count();
@@ -114,7 +116,30 @@ case SATURDAY:var = var + 1;
     }
 
     //Augmenter salaire
-    //public void augmenterSalaire(double pourcentage){}
+    public Double augmenterSalaire(Double pourcentage){
+
+        Integer nbAnneeAnciennete = this.getNombreAnneeAnciennete();
+
+        if(matricule != null && nbAnneeAnciennete > 0){
+            switch (matricule.substring(0,1)) {
+                //case Manager
+                case "M" : pourcentage = 10.0;
+                    break;
+                //case Commercial
+                case "C" : pourcentage = 8.0;
+                    break;
+                //case Technicien
+                case "T": pourcentage = 5.0;
+                    break;
+                default: pourcentage = 0.0;
+                    break;
+            }
+        }
+        else {
+            pourcentage = 0.0;
+        }
+        return salaire + (salaire * pourcentage / 100);
+    }
 
     public Long getId() {
         return id;
